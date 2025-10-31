@@ -11,9 +11,9 @@ def main():
     # Create root window
     root = tk.Tk()
     
-    # Set window icon (optional - you can add an icon file)
+    # Set window icon 
     try:
-        root.iconbitmap('pomodoro_icon.ico')
+        root.iconbitmap('Icon.ico')
     except:
         pass  # Icon file not found, continue without it
     

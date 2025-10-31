@@ -1,33 +1,23 @@
 {
-  "total_work_time": 240,
-  "total_break_time": 120,
-  "sessions_completed": 4,
+  "total_work_time": 360,
+  "total_break_time": 180,
+  "sessions_completed": 6,
   "today_sessions": [
     {
       "type": "work",
-      "timestamp": "2025-10-30T18:47:31.289136",
+      "timestamp": "2025-10-31T18:17:06.787507",
       "duration": 60
     },
     {
       "type": "break",
-      "timestamp": "2025-10-30T18:49:09.815309",
+      "timestamp": "2025-10-31T18:18:16.943124",
       "duration": 60
     },
     {
       "type": "work",
-      "timestamp": "2025-10-30T18:50:41.025426",
-      "duration": 60
-    },
-    {
-      "type": "work",
-      "timestamp": "2025-10-30T19:06:47.906652",
-      "duration": 60
-    },
-    {
-      "type": "break",
-      "timestamp": "2025-10-30T19:08:18.287135",
+      "timestamp": "2025-10-31T19:47:38.661725",
       "duration": 60
     }
   ],
-  "last_reset": "2025-10-30"
+  "last_reset": "2025-10-31"
 }

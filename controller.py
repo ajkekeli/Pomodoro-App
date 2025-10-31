@@ -121,13 +121,13 @@ class PomodoroController:
         if not self.notification_shown:
             if session_type == PomodoroModel.SESSION_WORK:
                 self.view.show_notification(
-                    "Break Time!",
-                    "Great work! Time for a break."
+                    "Break Complete!",
+                    "Ready to get back to work?"
                 )
             else:
                 self.view.show_notification(
-                    "Break Complete!",
-                    "Ready to get back to work?"
+                   "Break Time!",
+                    "Great work! Time for a break."
                 )
             self.notification_shown = True
         
@@ -154,7 +154,7 @@ class PomodoroController:
                 self.root.bell()
             except:
                 pass
-    
+
     def update_view(self):
         """Update view with current model state."""
         state = self.model.get_state_dict()
@@ -183,7 +183,7 @@ def main():
     
     root.protocol("WM_DELETE_WINDOW", on_closing)
     
-    # Run the application
+    # Run the application"
     controller.run()
 
 

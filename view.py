@@ -239,6 +239,8 @@ class PomodoroView:
         )
         self.start_stop_btn.pack(pady=5)
         
+        
+        
         # Reset button (smaller, secondary)
         self.reset_btn = tk.Button(
             control_frame,
