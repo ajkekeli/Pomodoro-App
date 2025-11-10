@@ -1,12 +1,11 @@
-"""
-Pomodoro Timer - View
-Handles all UI components and rendering
-"""
+
 
 import tkinter as tk
 from tkinter import ttk, messagebox
 import math
 from typing import Dict, Callable
+from unicodedata import name
+from PIL import Image, ImageTk, ImageSequence
 
 
 class PomodoroView:
@@ -14,7 +13,7 @@ class PomodoroView:
     View class for Pomodoro timer application.
     Manages all UI elements and user interactions.
     """
-    
+
     # Color schemes
     WORK_COLORS = {
         'primary': '#4A90E2',
@@ -40,40 +39,104 @@ class PomodoroView:
         self.root.title("Pomodoro Timer")
         self.root.geometry("500x700")
         self.root.resizable(True, True)
-        
+
+        # Center window
+        self.center_window(500, 700)
+
         # Current color scheme
         self.current_colors = self.WORK_COLORS
+
+        # --- Splash Screen Setup ---
+        splash_gif: str = "assets/splashwork.gif"
+        splash_duration: int = 4000
+        self.splash_gif = splash_gif
+        self.splash_duration = splash_duration
+        self.frames = []
+        self.current_frame = 0
+        self.animating = False
+
+        self.splash_frame = tk.Frame(self.root, bg="#ffffff")
+        self.splash_frame.pack(fill="both", expand=True)
+
+        self._load_gif_frames()
+        self.gif_label = tk.Label(self.splash_frame, bg="#ffffff") #self.current_colors['bg']
+        self.gif_label.place(relx=0.5, rely=0.5, anchor="center")
+        
+        # Optional splash loading text
+        # self.loading_text = tk.Label(self.splash_frame, text="Loading...", font=("Helvetica", 10), bg="#ffffff", fg="#666")
+        # self.loading_text.place(relx=0.5, rely=0.8, anchor="center")
+
+        # --- Main Pomodoro Frame ---
+        self.main_frame = tk.Frame(self.root, bg="#F0F4F8")
         
         # Controller callbacks (to be set by controller)
         self.on_start_stop: Callable = None
         self.on_pause: Callable = None
         self.on_reset: Callable = None
         self.on_settings: Callable = None
+        self.on_session_name_change: Callable = None
+        self.on_history: Callable = None
+
+        # Start splash
+        self.show_splash()
+
+        # Schedule switch to main app
+        self.root.after(self.splash_duration, self.show_main)
         
         # Create UI components
         self._create_widgets()
         self._apply_theme(self.WORK_COLORS)
+
+    # ---------------- SPLASH SCREEN ----------------
+    def _load_gif_frames(self):
+        """Load all frames from the GIF."""
+        gif = Image.open(self.splash_gif)
+        for frame in ImageSequence.Iterator(gif):
+            self.frames.append(ImageTk.PhotoImage(frame))
+
+    def _animate_gif(self):
+        """Loop GIF frames."""
+        if not self.animating:
+            return
+        self.gif_label.config(image=self.frames[self.current_frame])
+        self.current_frame = (self.current_frame + 1) % len(self.frames)
+        self.root.after(50, self._animate_gif)
+
+    def show_splash(self):
+        """Display splash and start animation."""
+        self.main_frame.pack_forget()
+        self.splash_frame.pack(fill="both", expand=True)
+        self.animating = True
+        self._animate_gif()
+
+    def show_main(self):
+        """Switch to main Pomodoro view."""
+        self.animating = False
+        self.splash_frame.pack_forget()
+        self.main_frame.pack(fill="both", expand=True, padx=20, pady=20)
     
     def _create_widgets(self):
         """Create all UI widgets."""
-        # Main container
-        self.main_frame = tk.Frame(self.root)
-        self.main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-        
         # Top section - Cycle indicator
         self._create_cycle_section()
-        
         # Middle section - Timer circle
         self._create_timer_section()
-        
+        self._create_session_name_section()
         # Lower section - Progress indicators
-        self._create_progress_section()
-        
+        self._create_progress_section()        
         # Bottom section - Control buttons
-        self._create_control_section()
-        
+        self._create_control_section()        
         # Settings button (top right corner)
         self._create_settings_button()
+        self._apply_theme(self.WORK_COLORS)
+
+    def center_window(self, width, height):
+        """Centers the window on the screen."""
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        x = int((screen_width / 2) - (width / 2))
+        y = max(int((screen_height / 2) - (height / 2)) - 40, 0)
+        self.root.geometry(f"{width}x{height}+{x}+{y}")
     
     def _create_cycle_section(self):
         """Create cycle indicator at the top."""
@@ -143,6 +206,66 @@ class PomodoroView:
             fg=self.current_colors['text']
         )
         self.canvas.create_window(150, 170, window=self.time_label)
+    
+    
+
+# Session name entry
+#         self.session_name_entry = tk.Entry(
+#     self.canvas,
+#     font=('Helvetica', 12),
+#     bg='white',
+#     fg=self.current_colors['text'],
+#     width=20,
+#     justify='center',
+#     relief=tk.FLAT,
+#     bd=1
+# )
+        # self.session_name_entry.insert(0, "Session Namkke")
+        # self.canvas.create_window(150, 230, window=self.session_name_entry)
+    
+    
+    def _create_session_name_section(self):
+        """Create session name input section."""
+        name_frame = tk.Frame(self.main_frame, bg=self.current_colors['bg'])
+        name_frame.pack(pady=10, fill=tk.X)
+    
+    # Label
+        tk.Label(
+        name_frame,
+        text="✏ Name this session:",
+        font=('Helvetica', 10, 'bold'),
+        bg=self.current_colors['bg'],
+        fg=self.current_colors['text']
+    ).pack()
+    
+    # Entry field
+        self.session_name_entry = tk.Entry(
+        name_frame,
+        font=('Helvetica', 12),
+        bg='white',
+        fg='#2C3E50',
+        width=30,
+        justify='center',
+        relief=tk.SOLID,
+        bd=1
+    )
+        self.session_name_entry.insert(0, "e.g., Study Math, Workout")
+        self.session_name_entry.pack(pady=5)
+    
+    # Placeholder behavior
+        def on_click(event):
+            if self.session_name_entry.get() == "e.g., Study Math, Workout":
+                self.session_name_entry.delete(0, tk.END)
+                self.session_name_entry.config(fg='#2C3E50')
+    
+        def on_focus_out(event):
+            if self.session_name_entry.get() == "":
+                self.session_name_entry.insert(0, "e.g., Study Math, Workout")
+                self.session_name_entry.config(fg='#999')
+    
+        self.session_name_entry.bind('<FocusIn>', on_click)
+        self.session_name_entry.bind('<FocusOut>', on_focus_out)
+        self.session_name_entry.config(fg='#999')
     
     def _create_progress_section(self):
         """Create progress indicators section."""
@@ -220,58 +343,80 @@ class PomodoroView:
     def _create_control_section(self):
         """Create control buttons section."""
         control_frame = tk.Frame(self.main_frame, bg=self.current_colors['bg'])
-        control_frame.pack(pady=20)
+        control_frame.pack()
         
-        # Start/Stop button
+        # --- Button Style Settings ---
+        btn_style = {
+            "font": ("Helvetica", 16, "bold"),
+            "fg": "white",
+            "relief": tk.FLAT,
+            "cursor": "hand2",
+        }
+
+        # --- START Button ---
         self.start_stop_btn = tk.Button(
             control_frame,
             text="START",
-            font=('Helvetica', 16, 'bold'),
-            bg=self.current_colors['primary'],
-            fg='white',
-            activebackground=self.current_colors['secondary'],
-            activeforeground='white',
-            relief=tk.FLAT,
-            padx=60,
-            pady=15,
-            cursor='hand2',
-            command=self._handle_start_stop
+            bg=self.current_colors["primary"],
+            activebackground=self.current_colors["secondary"],
+            command=self._handle_start_stop,
+            **btn_style
         )
-        self.start_stop_btn.pack(pady=5)
+        self.start_stop_btn.grid(row=0, column=0, padx=10, pady=10)
         
-        
-        
-        # Reset button (smaller, secondary)
+        # --- RESET Button ---
         self.reset_btn = tk.Button(
             control_frame,
-            text="Reset",
-            font=('Helvetica', 10),
-            bg=self.current_colors['bg'],
-            fg=self.current_colors['text'],
-            relief=tk.FLAT,
-            cursor='hand2',
-            command=self._handle_reset
+            text="RESET",
+            bg=self.current_colors["primary"],
+            activebackground=self.current_colors["secondary"],
+            command=self._handle_reset,
+            **btn_style
         )
-        self.reset_btn.pack(pady=5)
+        self.reset_btn.grid(row=0, column=1, padx=10, pady=10)
+
+        # Ensure equal weight for resizing
+        control_frame.columnconfigure(0, weight=1)
+        control_frame.columnconfigure(1, weight=1)
     
     def _create_settings_button(self):
-        """Create settings button in top right."""
+        """Create settings and history buttons in top right."""
+    # Settings button
         settings_btn = tk.Button(
-            self.main_frame,
-            text="⚙",
-            font=('Helvetica', 16),
-            bg=self.current_colors['bg'],
-            fg=self.current_colors['text'],
-            relief=tk.FLAT,
-            cursor='hand2',
-            command=self._handle_settings
-        )
+        self.main_frame,
+        text="⚙",
+        font=('Helvetica', 16),
+        bg=self.current_colors['bg'],
+        fg=self.current_colors['text'],
+        relief=tk.FLAT,
+        cursor='hand2',
+        command=self._handle_settings
+    )
         settings_btn.place(relx=1.0, rely=0.0, anchor='ne')
     
+    # History button (left of settings)
+        history_btn = tk.Button(
+        self.main_frame,
+        text="📜",
+        font=('Helvetica', 16),
+        bg=self.current_colors['bg'],
+        fg=self.current_colors['text'],
+        relief=tk.FLAT,
+        cursor='hand2',
+        command=self._handle_history
+    )
+        history_btn.place(relx=0.90, rely=0.0, anchor='ne')
+    
+    # ---------- Event Handlers ----------
     def _handle_start_stop(self):
         """Handle start/stop button click."""
         if self.on_start_stop:
             self.on_start_stop()
+
+    def _handle_history(self):
+            """Handle history button click."""
+            if self.on_history:
+                self.on_history()
     
     def _handle_reset(self):
         """Handle reset button click."""
@@ -284,6 +429,11 @@ class PomodoroView:
         if self.on_settings:
             self.on_settings()
     
+    def _handle_history(self):
+        """Handle history button click."""
+        if self.on_history:
+            self.on_history()
+        
     def update_display(self, state: Dict):
         """Update all display elements based on state."""
         session = state['session']
@@ -353,8 +503,13 @@ class PomodoroView:
             total_time = state['config']['long_break_duration']
         
         # Calculate progress
-        progress = ((total_time - current_time) / total_time) * 100 if total_time > 0 else 0
-        extent = -359.99 * (progress / 100)
+        # progress = ((total_time - current_time) / total_time) * 100 if total_time > 0 else 0
+        # extent = -359.99 * (progress / 100)
+
+        # Calculate progress fraction (0..1)
+        progress_frac = ((total_time - current_time) / total_time) if total_time > 0 else 0.0
+        # extent in degrees; negative value to draw clockwise from 90 degrees
+        extent = -360.0 * progress_frac
         
         # Update arc
         self.canvas.itemconfig(self.progress_arc, extent=extent)
@@ -386,7 +541,7 @@ class PomodoroView:
                 fill=color,
                 outline=''
             )
-    
+
     def _apply_theme(self, colors: Dict):
         """Apply color theme to all UI elements."""
         self.current_colors = colors
@@ -409,6 +564,15 @@ class PomodoroView:
         
         # Update graph canvas
         self.graph_canvas.configure(bg=colors['bg'])
+
+
+        """
+        def get_session_name(self) -> str:
+            #Get the current session name from entry field.
+        name = self.session_name_entry.get().strip()
+        if name == "" or name == "e.g., Study Math, Workout":
+            return "Untitled Session"
+        return name"""
     
     def show_notification(self, title: str, message: str):
         """Show a notification dialog."""

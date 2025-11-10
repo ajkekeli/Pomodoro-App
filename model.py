@@ -9,6 +9,7 @@ from datetime import datetime
 from typing import Dict, List, Callable
 
 
+ 
 class PomodoroModel:
     """
     Model class for Pomodoro timer application.
@@ -46,6 +47,7 @@ class PomodoroModel:
             'total_cycles': self.config['cycles_before_long_break'],
             'completed_work_sessions': 0,
             'completed_break_sessions': 0,
+            'current_session_name': '', 
         }
         
         # Statistics tracking
@@ -74,11 +76,13 @@ class PomodoroModel:
     
     def notify_observers(self):
         """Notify all observers of state changes."""
+        # print(self.observers)
         for callback in self.observers:
             callback()
     
     def start_timer(self):
         """Start the timer."""
+        # print("start timer")
         self.session_state['state'] = self.STATE_RUNNING
         self.notify_observers()
     
@@ -120,25 +124,27 @@ class PomodoroModel:
             self.statistics['total_work_time'] += self.config['work_duration']
             self.session_state['completed_work_sessions'] += 1
             self.statistics['sessions_completed'] += 1
-            
-            # Log session
+
+            # Log session with name
             self.statistics['today_sessions'].append({
                 'type': 'work',
+                'name': self.session_state['current_session_name'],  # ← ADD THIS
                 'timestamp': datetime.now().isoformat(),
                 'duration': self.config['work_duration']
             })
         else:
             duration = (self.config['short_break_duration'] 
-                       if session_type == self.SESSION_SHORT_BREAK 
-                       else self.config['long_break_duration'])
+               if session_type == self.SESSION_SHORT_BREAK 
+               else self.config['long_break_duration'])
             self.statistics['total_break_time'] += duration
             self.session_state['completed_break_sessions'] += 1
-            
+        
             self.statistics['today_sessions'].append({
-                'type': 'break',
-                'timestamp': datetime.now().isoformat(),
-                'duration': duration
-            })
+            'type': 'break',
+            'name': self.session_state['current_session_name'],  # ← ADD THIS
+            'timestamp': datetime.now().isoformat(),
+            'duration': duration
+        })
         
         # Move to next session
         self._next_session()
@@ -226,7 +232,7 @@ class PomodoroModel:
     def _save_statistics(self):
         """Save statistics to file."""
         try:
-            with open('pomodoro_stats.json', 'w') as f:
+            with open('data/pomodoro_stats.json', 'w') as f:
                 json.dump(self.statistics, f, indent=2)
         except Exception as e:
             print(f"Error saving statistics: {e}")
@@ -234,8 +240,8 @@ class PomodoroModel:
     def _load_statistics(self):
         """Load statistics from file."""
         try:
-            if os.path.exists('pomodoro_stats.json'):
-                with open('pomodoro_stats.json', 'r') as f:
+            if os.path.exists('data/pomodoro_stats.json'):
+                with open('data/pomodoro_stats.json', 'r') as f:
                     saved_stats = json.load(f)
                     
                 # Check if we need to reset daily stats
@@ -253,3 +259,8 @@ class PomodoroModel:
         minutes = seconds // 60
         secs = seconds % 60
         return f"{minutes:02d}:{secs:02d}"
+    
+    def set_session_name(self, name: str):
+        """Set the name for the current session."""
+        self.session_state['current_session_name'] = name
+        self.notify_observers()

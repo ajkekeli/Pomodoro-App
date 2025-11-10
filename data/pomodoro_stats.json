@@ -1,0 +1,20 @@
+{
+  "total_work_time": 540,
+  "total_break_time": 480,
+  "sessions_completed": 9,
+  "today_sessions": [
+    {
+      "type": "work",
+      "name": "",
+      "timestamp": "2025-11-10T15:42:41.838452",
+      "duration": 60
+    },
+    {
+      "type": "work",
+      "name": "",
+      "timestamp": "2025-11-10T15:44:55.983209",
+      "duration": 60
+    }
+  ],
+  "last_reset": "2025-11-10"
+}

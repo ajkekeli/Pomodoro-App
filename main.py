@@ -1,34 +1,34 @@
+"""
+Pomodoro Timer Application - MAIN ENTRY POINT WITH SPLASH
+"""
 
 import tkinter as tk
 from controller import PomodoroController
 
 
 def main():
-    """
-    Main entry point for the Pomodoro Timer application.
-    Creates the root window and initializes the controller.
-    """
-    # Create root window
+    """Main entry point with splash screen."""
+    
+    # CREATE MAIN APPLICATION FIRST
     root = tk.Tk()
     
-    # Set window icon 
+    # Set window icon
     try:
-        root.iconbitmap('Icon.ico')
+        root.iconbitmap('assets/imgs/icon.ico')
     except:
-        pass  # Icon file not found, continue without it
+        pass
     
-    # Initialize controller (which creates model and view)
+    # Initialize controller
     controller = PomodoroController(root)
     
-    # Handle window close event
+    # Handle window close
     def on_closing():
-        """Clean up and close the application."""
         controller.cleanup()
         root.destroy()
     
     root.protocol("WM_DELETE_WINDOW", on_closing)
     
-    # Start the application
+    # Start application
     controller.run()
 
 

@@ -2,12 +2,11 @@
 Pomodoro Timer - Controller
 Coordinates between Model and View, handles user interactions
 """
-
 import tkinter as tk
 from model import PomodoroModel
 from view import PomodoroView
-
-
+from history import HistoryWindow
+  
 class PomodoroController:
     """
     Controller class for Pomodoro timer application.
@@ -17,7 +16,7 @@ class PomodoroController:
     def __init__(self, root: tk.Tk):
         """Initialize controller with root window."""
         self.root = root
-        
+    
         # Initialize Model and View
         self.model = PomodoroModel()
         self.view = PomodoroView(root)
@@ -27,6 +26,7 @@ class PomodoroController:
         self.view.on_pause = self.handle_pause
         self.view.on_reset = self.handle_reset
         self.view.on_settings = self.handle_settings
+        self.view.on_history = self.handle_history
         
         # Register controller as observer of model
         self.model.add_observer(self.update_view)
@@ -68,6 +68,29 @@ class PomodoroController:
         self._stop_tick()
         self.model.reset_all()
         self.notification_shown = False
+    
+    def handle_history(self):
+        """Handle history button press."""
+        was_running = self.model.session_state['state'] == PomodoroModel.STATE_RUNNING
+        if was_running:
+            self.model.pause_timer()
+        self._stop_tick()
+    
+        statistics = self.model.statistics.copy()
+        HistoryWindow(self.root, statistics)
+    
+        if was_running:
+            self.model.start_timer()
+        self._start_tick()
+        
+    # Show history window
+        statistics = self.model.statistics.copy()
+        HistoryWindow(self.root, statistics)
+    
+    # Resume timer if it was running
+        if was_running:
+            self.model.start_timer()
+            self._start_tick()
     
     def handle_settings(self):
         """Handle settings button press."""
@@ -169,23 +192,3 @@ class PomodoroController:
         self._stop_tick()
         # Save any pending statistics
         self.model._save_statistics()
-
-
-def main():
-    """Main entry point for the application."""
-    root = tk.Tk()
-    controller = PomodoroController(root)
-    
-    # Handle window close event
-    def on_closing():
-        controller.cleanup()
-        root.destroy()
-    
-    root.protocol("WM_DELETE_WINDOW", on_closing)
-    
-    # Run the application"
-    controller.run()
-
-
-if __name__ == "__main__":
-    main()
