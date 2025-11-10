@@ -1,7 +1,7 @@
 {
-  "total_work_time": 540,
+  "total_work_time": 600,
   "total_break_time": 480,
-  "sessions_completed": 9,
+  "sessions_completed": 10,
   "today_sessions": [
     {
       "type": "work",
@@ -13,6 +13,12 @@
       "type": "work",
       "name": "",
       "timestamp": "2025-11-10T15:44:55.983209",
+      "duration": 60
+    },
+    {
+      "type": "work",
+      "name": "",
+      "timestamp": "2025-11-10T16:48:12.866816",
       "duration": 60
     }
   ],

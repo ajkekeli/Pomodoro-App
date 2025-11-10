@@ -39,6 +39,9 @@ class PomodoroView:
         self.root.title("Pomodoro Timer")
         self.root.geometry("500x700")
         self.root.resizable(True, True)
+        icon = ImageTk.PhotoImage(file="assets/imgs/icon.png")
+        root.iconphoto(True, icon)
+
 
         # Center window
         self.center_window(500, 700)

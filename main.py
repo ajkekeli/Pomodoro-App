@@ -12,12 +12,6 @@ def main():
     # CREATE MAIN APPLICATION FIRST
     root = tk.Tk()
     
-    # Set window icon
-    try:
-        root.iconbitmap('assets/imgs/icon.ico')
-    except:
-        pass
-    
     # Initialize controller
     controller = PomodoroController(root)
     
