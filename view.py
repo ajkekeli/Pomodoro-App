@@ -37,14 +37,14 @@ class PomodoroView:
         """Initialize the view with the root window."""
         self.root = root
         self.root.title("Pomodoro Timer")
-        self.root.geometry("500x700")
+        self.root.geometry("600x700")
         self.root.resizable(True, True)
         icon = ImageTk.PhotoImage(file="assets/imgs/icon.png")
         root.iconphoto(True, icon)
 
 
         # Center window
-        self.center_window(500, 700)
+        self.center_window(600, 700)
 
         # Current color scheme
         self.current_colors = self.WORK_COLORS
@@ -113,11 +113,37 @@ class PomodoroView:
         self._animate_gif()
 
     def show_main(self):
-        """Switch to main Pomodoro view."""
+        """Switch to main Pomodoro view with scroll support."""
         self.animating = False
         self.splash_frame.pack_forget()
-        self.main_frame.pack(fill="both", expand=True, padx=20, pady=20)
-    
+
+        # Create a canvas to enable scrolling
+        self.scroll_canvas = tk.Canvas(self.root, bg="#F0F4F8", highlightthickness=0)
+        self.scroll_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        # Add scrollbar
+        self.scrollbar = ttk.Scrollbar(self.root, orient="vertical", command=self.scroll_canvas.yview)
+        self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.scroll_canvas.configure(yscrollcommand=self.scrollbar.set)
+
+        # Create a frame inside the canvas for your actual widgets
+        self.main_frame = tk.Frame(self.scroll_canvas, bg="#F0F4F8")
+        self.scroll_window = self.scroll_canvas.create_window((0, 0), window=self.main_frame, anchor="nw")
+
+        # Configure scrolling region
+        def on_configure(event):
+            self.scroll_canvas.configure(scrollregion=self.scroll_canvas.bbox("all"))
+        self.main_frame.bind("<Configure>", on_configure)
+
+        # Enable mouse wheel scrolling
+        def on_mousewheel(event):
+            self.scroll_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+        self.scroll_canvas.bind_all("<MouseWheel>", on_mousewheel)
+
+        # Create your widgets inside this scrollable main_frame
+        self._create_widgets()
+        self._apply_theme(self.WORK_COLORS)
+
     def _create_widgets(self):
         """Create all UI widgets."""
         # Top section - Cycle indicator
@@ -209,66 +235,86 @@ class PomodoroView:
             fg=self.current_colors['text']
         )
         self.canvas.create_window(150, 170, window=self.time_label)
-    
-    
 
-# Session name entry
-#         self.session_name_entry = tk.Entry(
-#     self.canvas,
-#     font=('Helvetica', 12),
-#     bg='white',
-#     fg=self.current_colors['text'],
-#     width=20,
-#     justify='center',
-#     relief=tk.FLAT,
-#     bd=1
-# )
-        # self.session_name_entry.insert(0, "Session Namkke")
-        # self.canvas.create_window(150, 230, window=self.session_name_entry)
-    
-    
+
     def _create_session_name_section(self):
         """Create session name input section."""
         name_frame = tk.Frame(self.main_frame, bg=self.current_colors['bg'])
         name_frame.pack(pady=10, fill=tk.X)
-    
-    # Label
-        tk.Label(
-        name_frame,
-        text="✏ Name this session:",
-        font=('Helvetica', 10, 'bold'),
-        bg=self.current_colors['bg'],
-        fg=self.current_colors['text']
-    ).pack()
-    
-    # Entry field
+
+        # Label with dynamic session name display
+        self.name_label = tk.Label(
+            name_frame,
+            text="✏ Name this session:",
+            font=('Helvetica', 10, 'bold'),
+            bg=self.current_colors['bg'],
+            fg=self.current_colors['text']
+        )
+        self.name_label.pack(padx=(0, 5))
+
+        # Label to display chosen session name
+        self.session_display_label = tk.Label(
+            name_frame,
+            text="",  # will update after user enters name
+            font=('Helvetica', 10, 'bold'),
+            bg=self.current_colors['bg'],
+            fg=self.current_colors['primary']
+        )
+        self.session_display_label.pack()
+
+        # Frame for entry + button
+        entry_frame = tk.Frame(self.main_frame, bg=self.current_colors['bg'])
+        entry_frame.pack(pady=5)
+
+        # Entry field
         self.session_name_entry = tk.Entry(
-        name_frame,
-        font=('Helvetica', 12),
-        bg='white',
-        fg='#2C3E50',
-        width=30,
-        justify='center',
-        relief=tk.SOLID,
-        bd=1
-    )
+            entry_frame,
+            font=('Helvetica', 12),
+            bg='white',
+            fg='#999',
+            width=25,
+            justify='center',
+            relief=tk.SOLID,
+            bd=1
+        )
         self.session_name_entry.insert(0, "e.g., Study Math, Workout")
-        self.session_name_entry.pack(pady=5)
-    
-    # Placeholder behavior
+        self.session_name_entry.pack(side=tk.LEFT, padx=(0, 5))
+
+        # Button to confirm session name
+        def set_session_name():
+            name = self.session_name_entry.get().strip()
+            if not name or name == "e.g., Study Math, Workout":
+                name = "Untitled Session"
+            self.session_display_label.config(text=name)
+            self.session_name_entry.delete(0, tk.END)
+
+        confirm_btn = tk.Button(
+            entry_frame,
+            text="✔",
+            font=('Helvetica', 10, 'bold'),
+            bg=self.current_colors['primary'],
+            fg='white',
+            relief=tk.FLAT,
+            cursor='hand2',
+            command=set_session_name
+        )
+        confirm_btn.pack(side=tk.LEFT)
+
+        # Placeholder behavior
         def on_click(event):
             if self.session_name_entry.get() == "e.g., Study Math, Workout":
                 self.session_name_entry.delete(0, tk.END)
                 self.session_name_entry.config(fg='#2C3E50')
-    
+
         def on_focus_out(event):
             if self.session_name_entry.get() == "":
                 self.session_name_entry.insert(0, "e.g., Study Math, Workout")
                 self.session_name_entry.config(fg='#999')
-    
+
         self.session_name_entry.bind('<FocusIn>', on_click)
         self.session_name_entry.bind('<FocusOut>', on_focus_out)
-        self.session_name_entry.config(fg='#999')
+        self.session_name_entry.bind('<Return>', lambda event: set_session_name())  # Press Enter to confirm
+
     
     def _create_progress_section(self):
         """Create progress indicators section."""

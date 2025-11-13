@@ -1,26 +1,20 @@
 {
-  "total_work_time": 600,
-  "total_break_time": 480,
-  "sessions_completed": 10,
+  "total_work_time": 660,
+  "total_break_time": 540,
+  "sessions_completed": 11,
   "today_sessions": [
     {
       "type": "work",
       "name": "",
-      "timestamp": "2025-11-10T15:42:41.838452",
+      "timestamp": "2025-11-13T16:49:39.164219",
       "duration": 60
     },
     {
-      "type": "work",
+      "type": "break",
       "name": "",
-      "timestamp": "2025-11-10T15:44:55.983209",
-      "duration": 60
-    },
-    {
-      "type": "work",
-      "name": "",
-      "timestamp": "2025-11-10T16:48:12.866816",
+      "timestamp": "2025-11-13T16:51:15.691443",
       "duration": 60
     }
   ],
-  "last_reset": "2025-11-10"
+  "last_reset": "2025-11-13"
 }
