@@ -72,7 +72,7 @@ class SplashScreen:
         self.root.wait_window()
 
     def _load_gif(self):
-        """Load all frames from the GIF."""
+        """This method loads all frames from the GIF."""
         try:
             gif = Image.open(self.gif_path)
             for frame in ImageSequence.Iterator(gif):
@@ -83,7 +83,7 @@ class SplashScreen:
             self.frames = []
 
     def _animate(self, index):
-        """Animate GIF frames recursively."""
+        """This method animates GIF frames recursively."""
         if not self.is_playing or not self.frames:
             return
 

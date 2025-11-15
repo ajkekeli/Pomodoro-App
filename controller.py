@@ -17,11 +17,11 @@ class PomodoroController:
         """Initialize controller with root window."""
         self.root = root
     
-        # Initialize Model and View
+        # This initializes Model and View
         self.model = PomodoroModel()
         self.view = PomodoroView(root)
         
-        # Connect view callbacks to controller methods
+        # This connect view callbacks to controller methods
         self.view.on_start_stop = self.handle_start_stop
         self.view.on_pause = self.handle_pause
         self.view.on_reset = self.handle_reset
